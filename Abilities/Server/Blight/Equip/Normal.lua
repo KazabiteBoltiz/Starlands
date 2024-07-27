@@ -7,39 +7,120 @@ local AbilityStatus = require(Ability.Status)
 local RepS = game:GetService('ReplicatedStorage')
 local Packages = RepS.Packages
 local Trove = require(Packages.Trove)
+local Tree = require(Packages.Tree)
 
-local WeaponName = script.Parent.Parent.Name
+local Modules = RepS.Modules
+local GetPath = require(Modules.GetPath)
+
+local Players = game:GetService('Players')
+
+local Assets = RepS.Assets
+local WeaponAssets = Tree.Find(
+    Assets, 
+    'Melee/Blight'
+)
+
+local WeaponName = GetPath(
+    ServerS.Abilities, 
+    script.Parent.Parent, 
+    true
+)
 
 local Normal = {
-    Status = AbilityStatus.Open
+    Status = AbilityStatus.Open,
+    EffectPaths = {
+        Equip = 'Blight/Equip'
+    },
+    AbilityPaths = {}
 }
 
 function Normal.Start(Battle, Ability, PlayerData)
+    local Character = Battle.Character
+    local Humanoid = Character:FindFirstChild('Humanoid')
+    local WeaponGrip = Character:FindFirstChild('WeaponGrip')
+
     Battle.Status:Set(AbilityStatus.Locked)
 
-    --> Unequip Previous Active Weapon
     local ActiveWeapon = Battle.ActiveWeapon
-    if not ActiveWeapon then
-        ActiveWeapon = {}
+
+    local function Unequip()
+        Battle.ActiveWeapon.Trove:Clean()
+        Battle.ActiveWeapon = nil
+    end
+
+    local function Equip()
+        if ActiveWeapon then
+            ActiveWeapon.Trove:Clean()
+        end
+
+        local newTrove = Trove.new()
+        Battle.ActiveWeapon = {
+            Name = WeaponName,
+            Trove = newTrove
+        }
+
+        --> Creating The Weapon
+        local WeaponClone = Tree.Find(
+            WeaponAssets,
+            'Toggle/Tool',
+            'Model'
+        ):Clone()
+        newTrove:Add(WeaponClone)
+
+        WeaponClone:PivotTo(
+            WeaponGrip.CFrame *
+            WeaponClone:GetAttribute('Grip')
+        )
+        
+        local WeaponWeld = Instance.new('WeldConstraint')
+        WeaponWeld.Part1 = WeaponClone.Grip
+        WeaponWeld.Part0 = WeaponGrip        
+        newTrove:Add(WeaponWeld)
+
+        WeaponWeld.Parent = Character
+        WeaponClone.Parent = Character
+
+        --> Animations And Sounds
+
+        local EquipAnim = Tree.Find(
+            WeaponAssets,
+            'Toggle/Animations/Equip'
+        )
+        local EquipTrack = Humanoid:LoadAnimation(EquipAnim)
+        newTrove:Add(EquipTrack)
+        EquipTrack:Play()
+
+        local CraterEffect = Normal.Effects.Equip.new(
+            Character
+        )
+        CraterEffect:Start(Players:GetChildren())
+
+        --> Idle Animation Setup
+        local IdleAnim = Tree.Find(
+            WeaponAssets, 
+            'Toggle/Animations/Idle'
+        )
+        local IdleTrack = Humanoid:LoadAnimation(IdleAnim)
+        newTrove:Add(function()
+            IdleTrack:Stop(.2)
+        end)
+        IdleTrack:Play()
+
+        task.wait(.3)
+    end
+
+    local WantsToUnequip = PlayerData.WantToUnequip
+    if WantsToUnequip then
+        if ActiveWeapon and ActiveWeapon.Name == WeaponName then
+            Unequip()
+        end
     else
-        ActiveWeapon.Trove:Clean()
-        if ActiveWeapon.Name == WeaponName then
+        if ActiveWeapon and ActiveWeapon.Name == WeaponName then
             Battle.Status:Set(AbilityStatus.Open)
             return
         end
+        Equip()
     end
-
-    task.wait(.5)
-
-    --> Setting New ActiveWeapon Data
-    ActiveWeapon.Name = WeaponName
-    
-    --> Keeping Cleanup Ready For Future Equips
-    ActiveWeapon.Trove = Trove.new()
-    ActiveWeapon.Trove:Add(function()
-        Battle.ActiveWeapon = nil
-    end)
-    Battle.ActiveWeapon = ActiveWeapon
 
     Battle.Status:Set(AbilityStatus.Open)
 end

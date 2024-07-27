@@ -13,6 +13,7 @@ local Status = require(script.Status)
 
 local ServerS = game:GetService('ServerScriptService')
 local Abilities = ServerS.Abilities
+local ClientAbilities = RepS.Abilities
 
 local function GetPath(folderNow, resultPath)
 	if resultPath == nil then resultPath = {folderNow.Name} end
@@ -46,7 +47,7 @@ function Ability.new(Battle, PlayerData, MoveContainer, StartMove)
 	end
 
 	self.Move.SetTo:Connect(function(oldMoveName, newMoveName)
-		print(`[Move] {oldMoveName or nil} -> {newMoveName}`)
+		-- print(`[Move] {oldMoveName or nil} -> {newMoveName}`)
 	end)
 
 	self:Switch(StartMove, PlayerData)
@@ -73,12 +74,19 @@ function Ability:Switch(newMoveName, PlayerData)
 			)
 		end
 
+		for abilityName, abilityPath in newMove.AbilityPaths do
+			newMove.Effects[abilityName] = require(
+				Tree.Find(ClientAbilities, abilityPath)
+			)
+		end
+
 		newMove.Start(
 			self.Battle,
 			self,
 			PlayerData
 		)
 	end)
+	
 	self.Trove:Add(newMoveTask)
 end
 

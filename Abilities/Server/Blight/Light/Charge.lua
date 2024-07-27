@@ -4,7 +4,9 @@ local Ability = Systems.Ability
 local AbilityStatus = require(Ability.Status)
 
 local Charge = {
-    Status = AbilityStatus.Open
+    Status = AbilityStatus.Open,
+    EffectPaths = {},
+    AbilityPaths = {}
 }
 
 function Charge.Start(Battle, Ability, PlayerData)

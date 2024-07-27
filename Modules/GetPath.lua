@@ -15,8 +15,11 @@ local function loopUp(root, node, path)
     end
 end
 
-return function(root : Folder, instance : Instance)
+return function(root : Folder, instance : Instance, removeRoot : boolean)
     local pathSuccess : table = loopUp(root, instance)
+    if removeRoot then
+        table.remove(pathSuccess, 1)
+    end
     if pathSuccess then
         return table.concat(pathSuccess, '/')
     end

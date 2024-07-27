@@ -65,7 +65,7 @@ function Camera:Shake(event, ...)
 		CameraEffect(unpack(extraArgs))
 	end)
 
-	self.shakeTrove:Add(shakeTask)
+	-- self.shakeTrove:Add(shakeTask)
 end
 
 return Camera

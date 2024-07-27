@@ -14,7 +14,7 @@ local function OnPlayerJoin(player)
     player.CharacterAdded:Connect(function(character)
         local newBattle = Battle.new(
             character,
-            {'FlashStep'}
+            {'FlashStep', 'Blight/Equip', 'Blight/Light'}
         )
     end)
 
@@ -31,6 +31,6 @@ local AbilityRequest = Spark.Event('AbilityRequest')
 AbilityRequest.Fired:Connect(function(player, abilityPath, playerData)
     local battleInstance = Battle:Get(player)
     if not battleInstance then return end
-    
+
     battleInstance:Activate(abilityPath, playerData)
 end)

@@ -1,3 +1,4 @@
+local Players = game:GetService('Players')
 local RepS = game:GetService('ReplicatedStorage')
 
 local Packages = RepS.Packages
@@ -7,6 +8,7 @@ local Tree = require(Packages.Tree)
 local Modules = RepS.Modules
 local Value = require(Modules.Value)
 local Spark = require(Modules.Spark)
+local AbilityRequest = Spark.Event('AbilityRequest')
 
 local ServerS = game:GetService('ServerScriptService')
 local Systems = ServerS.Systems
@@ -60,12 +62,15 @@ function Battle.new(Character : Model, AbilityPaths : table)
         self:Add(abilityPath)
     end
 
+    self.Character = Character
+
     self.Ability = Value.new(nil)
     self.Ability.SetTo:Connect(function(oldAbilityName, newAbilityName)
-        print(`[Ability] {oldAbilityName} -> {newAbilityName}`)
+        -- print(`[Ability] {oldAbilityName} -> {newAbilityName}`)
     end)
 
     self.ActiveWeapon = nil
+    self.EquipRequired = false
     self.Status = Value.new(AbilityStatus.One)
 
     Battle.Instances[Character] = self
@@ -99,8 +104,19 @@ function Battle:Get(Actor)
     end
 end
 
-function Battle:Activate(AbilityPath, PlayerData, StartMoveName)
+function Battle:Trigger(Path, Event, ...)
+    local Player = Players:GetPlayerFromCharacter(self.Character)
+    if Player then
+        AbilityRequest:Fire(
+            Player,
+            Path,
+            Event,
+            ...
+        )
+    end
+end
 
+function Battle:Activate(AbilityPath, PlayerData, StartMoveName)
     --> Check if ability exists
     local AbilityContainer = self.Abilities[AbilityPath]
     if not AbilityContainer then return end
@@ -126,6 +142,26 @@ function Battle:Activate(AbilityPath, PlayerData, StartMoveName)
         return
     end
 
+    --> Storing Equipped Weapon For Re-Equip
+    local splitPath = string.split(AbilityPath, '/')
+    local isEquip = splitPath[#splitPath] == 'Equip'
+    table.remove(splitPath, #splitPath)
+    local abilityWeapon = table.concat(splitPath, '/')
+
+    if not isEquip then
+        if not self.EquipRequired and
+            self.ActiveWeapon and
+            self.ActiveWeapon.Name and
+            abilityWeapon ~= self.ActiveWeapon.Name
+        then
+            self.EquipRequired = self.ActiveWeapon.Name
+            self.ActiveWeapon.Trove:Clean()
+            self.ActiveWeapon = nil
+        end
+    else
+        self.EquipRequired = false
+    end
+
     --> Initiate Ability
     self.Ability:Set(AbilityPath)
 
@@ -137,17 +173,14 @@ function Battle:Activate(AbilityPath, PlayerData, StartMoveName)
     )
 end
 
-function Battle:GetWeapon()
+function Battle:EquipStoredWeapon(PlayerData)
+    if not self.EquipRequired then return end
+    local StoredWeaponPath = self.EquipRequired
+    local StoredEquipPath = StoredWeaponPath..'/Equip'
 
-end
+    print('Activating', StoredEquipPath)
 
-function Battle:Announce(Character, VisualPath, Event)
-    local data = {
-        'Ability',
-        Character,
-        VisualPath,
-        Event
-    }
+    self:Activate(StoredEquipPath, PlayerData or {})
 end
 
 function Battle:Destroy()

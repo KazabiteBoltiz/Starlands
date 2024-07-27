@@ -4,7 +4,9 @@ local Ability = Systems.Ability
 local AbilityStatus = require(Ability.Status)
 
 local Swing = {
-    Status = AbilityStatus.Open
+    Status = AbilityStatus.Open,
+    EffectPaths = {},
+    AbilityPaths = {}
 }
 
 function Swing.Start(Battle, Ability, PlayerData)
