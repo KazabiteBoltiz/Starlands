@@ -66,7 +66,7 @@ local WhenJumped = 0
 
 MaxRunSpeed.Changed:Connect(function(_, newMaxRunSpeed)
 	if Running:Get() and OnGround:Get() then
-		RunSpeed.Target = newMaxRunSpeed
+		RunSpeed.Target = newMaxRunSpeed or 20
 	end
 end)
 
@@ -187,7 +187,7 @@ Running.Changed:Connect(function(_, running)
 	
 	if running and OnGround:Get() then
 		Tracks['Run']:Play(1)
-		RunSpeed.Target = MaxRunSpeed:Get()
+		RunSpeed.Target = MaxRunSpeed:Get() or 20
 		RunSpeed.Speed = 15
 	else
 		Tracks['Run']:Stop()

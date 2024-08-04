@@ -68,7 +68,7 @@ function Dash:Start()
             self.Root.Position,
             -Vector3.yAxis * 4,
             CollideParams
-        ) 
+        )
 		
 		if craterRay then
 			self:CraterShake()

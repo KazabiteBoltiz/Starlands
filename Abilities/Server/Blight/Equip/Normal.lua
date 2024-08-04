@@ -21,8 +21,8 @@ local WeaponAssets = Tree.Find(
 )
 
 local WeaponName = GetPath(
-    ServerS.Abilities, 
-    script.Parent.Parent, 
+    ServerS.Abilities,
+    script.Parent.Parent,
     true
 )
 
@@ -43,9 +43,15 @@ function Normal.Start(Battle, Ability, PlayerData)
 
     local ActiveWeapon = Battle.ActiveWeapon
 
+    Ability.Trove:Add(function()
+        Battle.Status:Set(AbilityStatus.Open)
+    end)
+
     local function Unequip()
         Battle.ActiveWeapon.Trove:Clean()
         Battle.ActiveWeapon = nil
+        
+        Battle.Status:Set(AbilityStatus.Open)
     end
 
     local function Equip()
@@ -56,7 +62,8 @@ function Normal.Start(Battle, Ability, PlayerData)
         local newTrove = Trove.new()
         Battle.ActiveWeapon = {
             Name = WeaponName,
-            Trove = newTrove
+            Trove = newTrove,
+            Combo = 1
         }
 
         --> Creating The Weapon
@@ -106,7 +113,9 @@ function Normal.Start(Battle, Ability, PlayerData)
         end)
         IdleTrack:Play()
 
-        task.wait(.3)
+        Ability.Trove:Add(task.delay(.3, function()
+            Battle.Status:Set(AbilityStatus.Open)
+        end))
     end
 
     local WantsToUnequip = PlayerData.WantToUnequip
@@ -121,8 +130,6 @@ function Normal.Start(Battle, Ability, PlayerData)
         end
         Equip()
     end
-
-    Battle.Status:Set(AbilityStatus.Open)
 end
 
 return Normal

@@ -40,8 +40,6 @@ local function OnRemoteAdded(remote)
 	local existingEvent = SparkClient[remoteFolder][name]
 	if existingEvent then
 		if existingEvent.IsFake then
-			print('Replacing', name, 'With Actual Remote!')
-
 			--> If A Fake Event Was Created Before
 			--> Replace With Real Event Of Same Name
 			existingEvent.IsFake = false

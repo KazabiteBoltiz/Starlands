@@ -32,7 +32,7 @@ function Blink:OnConstruct(Character)
 end
 
 function Blink:OnStart()
-    local CoreColor = CoreData[self.Character:GetAttribute('Core')].Primary
+    local CoreColor = CoreData[self.Character:GetAttribute('Core')]
 
     local BlinkEffect = DashAssets.Blink:Clone()
     local FlashFill = DashAssets.FlashFill:Clone()
@@ -44,17 +44,17 @@ function Blink:OnStart()
 
     task.wait()
 
-    DashLight.Color = CoreColor
+    DashLight.Color = CoreColor.Primary
     TS:Create(
         DashLight,
         TweenInfo.new(.6, Enum.EasingStyle.Cubic),
         {Brightness = 0}
     ):Play()
 
-    local powerDownTask = task.delay(.4, function()
+    local powerDownTask = task.delay(.3, function()
         TS:Create(
             FlashFill,
-            TweenInfo.new(.6, Enum.EasingStyle.Cubic),
+            TweenInfo.new(.5, Enum.EasingStyle.Cubic),
             {FillTransparency = 1}
         ):Play()
 

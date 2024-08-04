@@ -73,7 +73,7 @@ function Dash.Start(Battle, Ability, PlayerData)
     Ability.Trove:Add(InvisEffect, 'Destroy')
     InvisEffect:Start(Players:GetChildren())
 
-    --> Crater
+    --> Start Crater
     local CraterEffect = Dash.Effects.Crater.new(
         Character, 
         9, 4, 0, 1,
@@ -81,32 +81,31 @@ function Dash.Start(Battle, Ability, PlayerData)
     )
     CraterEffect:Start(Players:GetChildren())
 
-    --> End Delay
-
-    task.wait(.3)
-
     --> End Crater
-
-    local CraterEffect = Dash.Effects.Crater.new(
-        Character,
-        9, 3, 0, 1,
-        Vector3.new(2,2,1)
-    )
-    CraterEffect:Start(Players:GetChildren())
-
-    task.wait(.3)
+    Ability.Trove:Add(task.delay(.3, function()
+        local CraterEffect = Dash.Effects.Crater.new(
+            Character,
+            9, 3, 0, 1,
+            Vector3.new(2,2,1)
+        )
+        CraterEffect:Start(Players:GetChildren())
+    end))
 
     --> End Ability
+    Ability.Trove:Add(function()
+        Battle:Trigger(
+            MovePath,
+            'Destroy',
+            PlayerData
+        )
 
-    Battle:Trigger(
-        MovePath,
-        'Destroy',
-        PlayerData
-    )
+        Battle.Status:Set(AbilityStatus.Open)
+        Battle:EquipStoredWeapon()
+    end)
 
-    Battle.Status:Set(AbilityStatus.Open)
-    
-    Battle:EquipStoredWeapon()
+    task.delay(.5, function()
+        Ability.Trove:Clean()
+    end)
 end
 
 return Dash

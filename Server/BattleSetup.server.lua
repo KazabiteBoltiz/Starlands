@@ -14,7 +14,12 @@ local function OnPlayerJoin(player)
     player.CharacterAdded:Connect(function(character)
         local newBattle = Battle.new(
             character,
-            {'FlashStep', 'Blight/Equip', 'Blight/Light'}
+            {
+                'FlashStep',
+                'Blight/Equip',
+                'Blight/Light',
+                'Blight/Block'
+            }
         )
     end)
 

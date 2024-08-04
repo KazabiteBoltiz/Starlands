@@ -9,7 +9,8 @@ local AbilityRequest = Spark.Event('AbilityRequest')
 local Keybinds = {
     [Enum.KeyCode.Q] = 'FlashStep',
     [Enum.KeyCode.E] = 'Blight/Equip',
-    [Enum.UserInputType.MouseButton1] = 'Blight/Light'
+    [Enum.UserInputType.MouseButton1] = 'Blight/Light',
+    [Enum.KeyCode.F] = 'Blight/Block'
 }
 
 local Character = script.Parent

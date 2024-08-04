@@ -95,6 +95,7 @@ function CraterModule.CreateCircle( Part: BasePart, Number: number, Radius: numb
 		if rayc then
 			
 			grass.Material = rayc.Material
+			grass.MaterialVariant = rayc.Instance.MaterialVariant
 			grass.Color = rayc.Instance.Color
 				
 			for _, v in rayc.Instance:GetChildren() do

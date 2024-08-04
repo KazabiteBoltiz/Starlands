@@ -2,6 +2,7 @@ local RepS = game:GetService('ReplicatedStorage')
 
 local Packages = RepS.Packages
 local Trove = require(Packages.Trove)
+local Signal = require(Packages.Signal)
 
 local Modules = RepS.Modules
 local Value = require(Modules.Value)
@@ -15,6 +16,8 @@ function Property.new(Name, initialValue, Event)
     self.PrivateValues = {}
     self.Value = Value.new('___')
     self.Trove = Trove.new()
+
+    self.Changed = Signal.new()
 
     self.Event = Event
     self.Event.Fired:Connect(function(player, ...)
@@ -43,7 +46,7 @@ function Property:Set(value)
 end
 
 function Property:SetFor(player, value)
-    local playerVal = self.PrivateValues[player] 
+    local playerVal = self.PrivateValues[player]
     if not playerVal then
         self:AddClient(player)
     else
@@ -59,11 +62,36 @@ function Property:AddClient(player)
         self:Broadcast(player)
     end)
     self.PrivateValues[player] = {
-        playerTrove, 
+        playerTrove,
         newValue
     }
 
     self:Broadcast(player)
+end
+
+function Property:AddListener(Character)
+    local playerTrove = self.Trove:Extend()
+    local newValue = Value.new(self:Get())
+    local changedSignal = Signal.new()
+    playerTrove:Connect(newValue.Changed, function(...)
+        self:Broadcast(Character)
+    end)
+    self.PrivateValues[Character] = {
+        playerTrove,
+        newValue,
+        changedSignal
+    }
+
+    self:Broadcast(Character)
+end
+
+function Property:RemoteListener(Character)
+    local privValues = self.PrivateValues[Character]
+    if privValues then
+        privValues[1]:Clone()
+        privValues[3]:Destroy()
+    end
+    self.PrivateValues[Character] = nil
 end
 
 function Property:RemoteClient(player)
@@ -72,7 +100,7 @@ function Property:RemoteClient(player)
     self.PrivateValues[player] = nil
 end
 
-function Property:Broadcast(players : table)
+function Property:Broadcast(players)
     if typeof(players) == 'table' then
         for _, player in players do
             local privValues = self.PrivateValues[player]
@@ -81,6 +109,10 @@ function Property:Broadcast(players : table)
     elseif players:IsA('Player') then
         local privValues = self.PrivateValues[players]
         self.Event:Fire(players, privValues[2]:Get())
+    elseif players:IsA('Model') then
+        local privValues = self.PrivateValues[players]
+        local changedSignal = privValues[3]
+        changedSignal:Fire(privValues[2]:Get())
     end
 end
 
