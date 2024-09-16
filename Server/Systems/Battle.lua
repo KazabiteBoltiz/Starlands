@@ -14,6 +14,7 @@ local ServerS = game:GetService('ServerScriptService')
 local Systems = ServerS.Systems
 local Ability = require(Systems.Ability)
 local AbilityStatus = require(Systems.Ability.Status)
+local AbilityPriority = require(Systems.Ability.Priority)
 local Abilities = ServerS.Abilities
 
 --[[====================]]--
@@ -72,6 +73,7 @@ function Battle.new(Character : Model, AbilityPaths : table)
     self.ActiveWeapon = nil
     self.EquipRequired = false
     self.Status = Value.new(AbilityStatus.One)
+    self.Priority = Value.new(AbilityPriority.None)
 
     Battle.Instances[Character] = self
 
@@ -91,7 +93,7 @@ function Battle:Remove(abilityPath)
     end
 end
 
-function Battle:Get(Actor)
+function Battle.Get(Actor)
     if Actor:IsA('Model') then
         return Battle.Instances[Actor]
     elseif Actor:IsA('Player') then

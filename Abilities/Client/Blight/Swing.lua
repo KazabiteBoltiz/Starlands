@@ -40,8 +40,13 @@ end
 function Swing:Start()
     local Combo = self.PlayerData.Combo
 
+    local hitboxOverlap = OverlapParams.new()
+    hitboxOverlap.FilterDescendantsInstances = {self.Character}
+    hitboxOverlap.FilterType = Enum.RaycastFilterType.Exclude
+
     local hitbox = MHitbox.CreateHitbox()
     hitbox.Size = 4
+    hitbox.OverlapParams = hitboxOverlap
     hitbox.Shape = Enum.PartType.Ball
     hitbox.CFrame = self.Root
     hitbox.Offset = CFrame.new(0,0,-2.2)
@@ -73,11 +78,11 @@ function Swing:Start()
         )
     end
 
-    self.Trove:Add(task.delay(Combo < 3 and .1 or .2, function()
+    self.Trove:Add(task.delay(Combo < 3 and 0 or .05, function()
         hitbox:Start()
         task.wait(.05)
         hitbox:Stop()
-
+        
         HitboxEvent:Fire(self.PlayerData.ContextId, targets)
     end))
 end

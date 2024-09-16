@@ -26,5 +26,6 @@ return EnumList.new('AbilityPriority', {
     'Guardbreak',
     'Heavy',
     'Light',
-    'Passive'
+    'Passive',
+    'None'
 })

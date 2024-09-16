@@ -4,7 +4,9 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local ServerS = game:GetService('ServerScriptService')
 local Systems = ServerS.Systems
 local Ability = Systems.Ability
+local Battle = require(Systems.Battle)
 local AbilityStatus = require(Ability.Status)
+local AbilityPriority = require(Ability.Priority)
 
 local RepS = game:GetService('ReplicatedStorage')
 local Packages = RepS.Packages
@@ -21,7 +23,7 @@ local Http = game:GetService('HttpService')
 
 local Swing = {
     Status = AbilityStatus.Open,
-    EffectPaths = {Light = 'Blight/Light'},
+    EffectPaths = {Light = 'Blight/Light', LightHit = 'Blight/LightHit'},
     AbilityPaths = {'Blight/Swing'}
 }
 
@@ -105,6 +107,28 @@ function Swing.Start(Battle, Ability, _)
     Ability.Trove:Connect(HitboxMarker, function()
         if #HitTargets > 0 then
             HitStop()
+
+            for _, hitTarget in HitTargets do
+                local targetBattle = Battle.Get(hitTarget.Parent)
+                if not targetBattle then continue end
+
+                local targetPriority = targetBattle.Priority:Get()
+                if targetPriority.Value < AbilityPriority.None.Value then
+                    continue
+                end
+
+                --> Hit Effect
+                local HitEffect = Swing.Effects.LightHit.new(
+                    hitTarget,
+                    PlayerData
+                )
+                HitEffect:Start(Players:GetChildren())
+
+                --> Sending Target Knockback
+                targetBattle:Activate(
+                    'Knockback'
+                )
+            end
         end
     end)
 

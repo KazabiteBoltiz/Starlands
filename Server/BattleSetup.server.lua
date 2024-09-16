@@ -34,7 +34,7 @@ Players.PlayerAdded:Connect(OnPlayerJoin)
 
 local AbilityRequest = Spark.Event('AbilityRequest')
 AbilityRequest.Fired:Connect(function(player, abilityPath, playerData)
-    local battleInstance = Battle:Get(player)
+    local battleInstance = Battle.Get(player)
     if not battleInstance then return end
 
     battleInstance:Activate(abilityPath, playerData)
